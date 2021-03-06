@@ -65,8 +65,8 @@ void loop() {
 			matrix1.drawColon(false);
 
 		// If the output is not under 60 seconds, draw the colon
-		if (output[0] => 60) matrix1.drawColon(true);
-		if (output[1] => 60) matrix2.drawColon(true);
+		if (output[0] >= 60) matrix1.drawColon(true);
+		if (output[1] >= 60) matrix2.drawColon(true);
 
 		// Write out to both matrices
 		matrix1.writeDisplay();
