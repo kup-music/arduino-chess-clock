@@ -61,8 +61,8 @@ void loop() {
 		matrix2.print(output[1]);
 
 		// By default, colons are not drawn
-			matrix2.drawColon(false);
-			matrix1.drawColon(false);
+		matrix1.drawColon(false);
+		matrix2.drawColon(false);
 
 		// If the output is not under 60 seconds, draw the colon
 		if (output[0] >= 60) matrix1.drawColon(true);
@@ -76,3 +76,13 @@ void loop() {
 	// TODO - Idk why this is here yet lmao
 	lcd.setCursor(0, 1);
 }
+
+
+// TODO - Win condition with player name display for whoever won
+// Increments on player moves
+// Library of presets
+// Input to change presets before game [PHYSICAL]
+// Starting opponents clock
+// Play pause button [PHYSICAL]
+// Time precision at low time
+// Toggle switch [PHYSICAL]
