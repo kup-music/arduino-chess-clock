@@ -29,81 +29,50 @@ void setup() {
 
 
 long time_format(long time_code) {
-	// long mins = time_code / 1000 / 60;
-	// long secs = time_code / 1000 % 60;
 	long final = ((time_code / 1000 / 60) * 100) + (time_code / 1000 % 60);
 	return final;
-
 }
 
 
 void loop() {
-	// Total time remaining for each player
-	long totaltime = 300000; 
+	// Total time remaining for each player, and original starting time
+	long totaltime = 300000;
 	long player_time[2] = {totaltime, totaltime};
 
 
 	while (true) {
+		// Measure a unit of time for each run of the loop
 		long tick = millis();
 		delay(100);
+		tick = millis() - tick;
 
+		// Keep an array of the two numbers we are outputting
+		long output[2] = {time_format(player_time[0]), time_format(player_time[1])};
+
+		// Decrement the players clock corresponding to the switch position
 		if (digitalRead(10) == 1) {
-			long time_taken = millis() - tick;
-
-			player_time[0] -= time_taken;
-
-
-			long output = time_format(player_time[0]);
-
-			matrix1.print(output);
-			matrix2.print(time_format(player_time[1]));
-
-			if (time_format(player_time[0]) < 60) {
-				matrix1.drawColon(false);
-			} else {
-				matrix1.drawColon(true);
-			}
-			if (time_format(player_time[1]) < 60) {
-				matrix2.drawColon(false);
-			} else {
-				matrix2.drawColon(true);
-			}
-
-
-			matrix1.writeDisplay();
-			matrix2.writeDisplay();
+			player_time[0] -= tick;
 		} else {
-			long time_taken = millis() - tick;
-
-			player_time[1] -= time_taken;
-
-
-			long output = time_format(player_time[1]);
-
-			matrix2.print(output);
-			matrix1.print(time_format(player_time[0]));
-
-			if (time_format(player_time[0]) < 60) {
-				matrix1.drawColon(false);
-			} else {
-				matrix1.drawColon(true);
-			}
-			if (time_format(player_time[1]) < 60) {
-				matrix2.drawColon(false);
-			} else {
-				matrix2.drawColon(true);
-			}
-
-
-			matrix1.writeDisplay();
-			matrix2.writeDisplay();
+			player_time[1] -= tick;
 		}
-  }
-  // put your main code here, to run repeatedly:
 
+		// Print the current digits to the clock
+		matrix1.print(output[0]);
+		matrix2.print(output[1]);
 
-  lcd.setCursor(0, 1);
-  
-  // lcd.print(starttime);
-  //lcd.print(millis() / 1000);
+		// By default, colons are not drawn
+			matrix2.drawColon(false);
+			matrix1.drawColon(false);
+
+		// If the output is not under 60 seconds, draw the colon
+		if (output[0] => 60) matrix1.drawColon(true);
+		if (output[1] => 60) matrix2.drawColon(true);
+
+		// Write out to both matrices
+		matrix1.writeDisplay();
+		matrix2.writeDisplay();
+	}
+
+	// TODO - Idk why this is here yet lmao
+	lcd.setCursor(0, 1);
 }
