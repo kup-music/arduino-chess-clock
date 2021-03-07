@@ -47,7 +47,7 @@ long time_format(long time_code) {
 
 	// If player has less than 10 seconds switch to a precision display
 	if (output < 10) {
-		output = ((time_code / 1000) * 100) + (time_code % 100);
+		output = ((time_code / 1000) * 100) + ((time_code % 1000) / 10);
 	} else {
 		output = ((time_code / 1000 / 60) * 100) + (time_code / 1000 % 60);
 	}
