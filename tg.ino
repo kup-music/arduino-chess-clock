@@ -1,13 +1,13 @@
 #include <Wire.h> // Enable this line if using Arduino Uno, Mega, etc.
 #include <Adafruit_GFX.h>
 #include "Adafruit_LEDBackpack.h"
-#include <LiquidCrystal.h>
+// #include <LiquidCrystal.h>
 
 Adafruit_7segment matrix1 = Adafruit_7segment();
 Adafruit_7segment matrix2 = Adafruit_7segment();
 
-const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+// const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+// LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 void setup() {
 	// put your setup code here, to run once:
@@ -23,7 +23,7 @@ void setup() {
 	digitalWrite(8, HIGH);
 	digitalWrite(9, LOW);
 
-	lcd.begin(16, 2);
+	// lcd.begin(16, 2);
 	// lcd.print("Hello, World!");
 
 
@@ -42,7 +42,7 @@ void setup() {
 }
 
 // Take a millisecond time code and format it to a displayable number
-long time_format(long time_code) {
+void print_time(long time_code, Adafruit_7segment *matrix) {
 	long output = time_code / 1000;
 
 	// If player has less than 10 seconds switch to a precision display
@@ -52,11 +52,29 @@ long time_format(long time_code) {
 		output = ((time_code / 1000 / 60) * 100) + (time_code / 1000 % 60);
 	}
 
-	return output;
+
+	// Print the current digits to the clock
+	matrix->print(output);
+
+	// Only display the colon if we are above a minute
+	/* if (output >= 60) { */
+	/* 	matrix->drawColon(true); */
+	/* } else { */
+	/* 	matrix->drawColon(false); */
+	/* } */
+	// TODO
+	// Oneliner of above block (I think)
+	matrix->drawColon(output >= 60);
+	// TODO - Need to add decimal for precision values
+
+	// Write out to the matrix
+	matrix->writeDisplay();
 }
 
 
 void loop() {
+	long time_start = 0;
+
 	// Total time remaining for each player, and original starting time
 	long totaltime = 300000;
 	long player_time[2] = {totaltime, totaltime};
@@ -68,44 +86,60 @@ void loop() {
 	// Get stuck in this loop until the button is hit for the first time
 	int latch = digitalRead(10);
 	while (true) {
-		if (digitalRead(10) != latch) break;
+		if (digitalRead(10) != latch) {
+			time_start = millis();
+			break;
+		}
 	}
+
 
 	while (true) {
-		// Measure a unit of time for each run of the loop
-		long tick = millis();
-		delay(100);
-		tick = millis() - tick;
+		long current_elapsed = millis() - time_start;
 
-		// Keep an array of the two numbers we are outputting
-		long output[2] = {time_format(player_time[0]), time_format(player_time[1])};
+		// In the event the switch is hit
+		if (latch != digitalRead(10)) {
 
-		// Decrement the players clock corresponding to the switch position
-		if (digitalRead(10) == 1) {
-			player_time[0] -= tick;
-		} else {
-			player_time[1] -= tick;
+			// TODO - Increments can be added here
+			// Dock the previous players time
+			if (latch) {
+				player_time[0] = player_time[0] - current_elapsed;
+			} else {
+				player_time[1] = player_time[1] - current_elapsed;
+			}
+
+			// Set a new time start and reset the latch
+			time_start = millis();
+			latch = digitalRead(10);
 		}
 
-		// Print the current digits to the clock
-		matrix1.print(output[0]);
-		matrix2.print(output[1]);
 
-		// By default, colons are not drawn
-		matrix1.drawColon(false);
-		matrix2.drawColon(false);
 
-		// If the output is not under 60 seconds, draw the colon
-		if (output[0] >= 60) matrix1.drawColon(true);
-		if (output[1] >= 60) matrix2.drawColon(true);
 
-		// Write out to both matrices
-		matrix1.writeDisplay();
-		matrix2.writeDisplay();
+		if (latch) {
+			long output = player_time[0] - current_elapsed;
+			print_time(output, &matrix1);
+			print_time(player_time[1], &matrix2);
+		} else {
+			long output = player_time[1] - current_elapsed;
+			print_time(output, &matrix2);
+			print_time(player_time[0], &matrix1);
+		}
+
+		// TODO - Formatstrings
+		// Win condition
+		if (player_time[0] <= 0) {
+			Serial.println("Game over! Player 1 has run out of time, player 2 wins!");
+			break;
+		} else if (player_time[1] <= 0) {
+			Serial.println("Game over! Player 2 has run out of time, player 1 wins!");
+			break;
+		}
 	}
 
+	// Win condition breaks us out of the true loop, idk what we wanna do after the game
+
 	// TODO - Idk why this is here yet lmao
-	lcd.setCursor(0, 1);
+	// lcd.setCursor(0, 1);
 }
 
 
