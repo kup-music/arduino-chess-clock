@@ -94,15 +94,17 @@ void loop() {
 
 
 	while (true) {
+		long current_elapsed = millis() - time_start;
+
 		// In the event the switch is hit
 		if (latch != digitalRead(10)) {
 
 			// TODO - Increments can be added here
 			// Dock the previous players time
 			if (latch) {
-				player_time[0] -= millis() + time_start;
+				player_time[0] = player_time[0] - current_elapsed;
 			} else {
-				player_time[1] -= millis() + time_start;
+				player_time[1] = player_time[1] - current_elapsed;
 			}
 
 			// Set a new time start and reset the latch
@@ -111,7 +113,6 @@ void loop() {
 		}
 
 
-		long current_elapsed = millis() - time_start;
 
 
 		if (latch) {
@@ -120,7 +121,7 @@ void loop() {
 			print_time(player_time[1], &matrix2);
 		} else {
 			long output = player_time[1] - current_elapsed;
-			print_time(current_elapsed, &matrix2);
+			print_time(output, &matrix2);
 			print_time(player_time[0], &matrix1);
 		}
 
