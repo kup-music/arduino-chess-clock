@@ -9,6 +9,9 @@ Adafruit_7segment matrix2 = Adafruit_7segment();
 // const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 // LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
+const int buzzer = 7; // buzzer to pin 7
+const int button1 = 3, button2 = 4, button3 = 5, button4 = 6; // define button pins
+
 void setup() {
 	// put your setup code here, to run once:
 	Serial.begin(9600);
@@ -16,12 +19,17 @@ void setup() {
 	matrix1.begin(0x70);
 	matrix2.begin(0x71);
 
-
+	pinMode(buzzer, OUTPUT);
 	pinMode(8, OUTPUT);
 	pinMode(9, OUTPUT);
 	pinMode(10, INPUT);
 	digitalWrite(8, HIGH);
 	digitalWrite(9, LOW);
+
+	pinMode(button1, INPUT);
+	pinMode(button2, INPUT);
+	pinMode(button3, INPUT);
+	pinMode(button4, INPUT);
 
 	// lcd.begin(16, 2);
 	// lcd.print("Hello, World!");
@@ -45,8 +53,8 @@ void setup() {
 void print_time(long time_code, Adafruit_7segment *matrix) {
 	long output = time_code / 1000;
 
-	// If player has less than 10 seconds switch to a precision display
-	if (output < 10) {
+	// If player has less than 60 seconds switch to a precision display
+	if (output < 60) {
 		output = ((time_code / 1000) * 100) + ((time_code % 1000) / 10);
 	} else {
 		output = ((time_code / 1000 / 60) * 100) + (time_code / 1000 % 60);
@@ -76,7 +84,7 @@ void loop() {
 	long time_start = 0;
 
 	// Total time remaining for each player, and original starting time
-	long totaltime = 300000;
+	long totaltime = 90000;
 	long player_time[2] = {totaltime, totaltime};
 
 
@@ -112,9 +120,6 @@ void loop() {
 			latch = digitalRead(10);
 		}
 
-
-
-
 		if (latch) {
 			long output = player_time[0] - current_elapsed;
 			print_time(output, &matrix1);
@@ -125,15 +130,21 @@ void loop() {
 			print_time(player_time[0], &matrix1);
 		}
 
-		// TODO - Formatstrings
-		// Win condition
 		if (player_time[0] <= 0) {
 			Serial.println("Game over! Player 1 has run out of time, player 2 wins!");
+			tone(buzzer, 500);
+			delay(1000);
+			noTone(buzzer);
 			break;
 		} else if (player_time[1] <= 0) {
 			Serial.println("Game over! Player 2 has run out of time, player 1 wins!");
+			tone(buzzer, 500);
+			delay(1000);
+			noTone(buzzer);
 			break;
 		}
+		// TODO - Formatstrings
+		// Win condition
 	}
 
 	// Win condition breaks us out of the true loop, idk what we wanna do after the game
