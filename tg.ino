@@ -11,7 +11,6 @@ Adafruit_7segment matrix2 = Adafruit_7segment();
 
 const int buzzer = 7; // buzzer to pin 7
 const int button1 = 3, button2 = 4, button3 = 5, button4 = 6; // define button pins
-// Variables for choosing gamemode
 
 void setup() {
 	// put your setup code here, to run once:
@@ -91,7 +90,7 @@ void loop() {
 
 	int latch = digitalRead(10);
 	int button3Latch = digitalRead(button3);
-
+	// Variables for choosing gamemode
 	int gamemodeCounter = 0;
 	int button1State = 0;
 	int lastbutton1State = 0;
@@ -140,10 +139,10 @@ void loop() {
 	long player_time[2] = {totaltime, totaltime};
 
 
-	// TODO - This won't actually display anything till button3 is hit
+	// TODO - This won't actually display anything till the switch is hit
 	// but this whole segment needs a rewrite anyway, fix it later
 	// TODO - This "memory" can also later be used to have time increments when a player moves
-	// Get stuck in this loop until button3 is hit for the first time
+	// Get stuck in this loop until the switch is hit for the first time
 	while (true) {
 		if (digitalRead(10) != latch) {
 			time_start = millis();
