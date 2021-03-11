@@ -160,9 +160,9 @@ void loop() {
 			// TODO - Increments can be added here
 			// Dock the previous players time
 			if (latch) {
-				player_time[0] = player_time[0] - current_elapsed;
+				player_time[0] = player_time[0] - current_elapsed + (modes[gamemodeCounter % 12].incrementTime * 1000);
 			} else {
-				player_time[1] = player_time[1] - current_elapsed;
+				player_time[1] = player_time[1] - current_elapsed + (modes[gamemodeCounter % 12].incrementTime * 1000);
 			}
 
 			// Set a new time start and reset the latch
