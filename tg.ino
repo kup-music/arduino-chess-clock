@@ -11,6 +11,7 @@ Adafruit_7segment matrix2 = Adafruit_7segment();
 
 const int buzzer = 7; // buzzer to pin 7
 const int button1 = 3, button2 = 4, button3 = 5, button4 = 6; // define button pins
+// Variables for choosing gamemode
 
 void setup() {
 	// put your setup code here, to run once:
@@ -79,20 +80,70 @@ void print_time(long time_code, Adafruit_7segment *matrix) {
 	matrix->writeDisplay();
 }
 
-
 void loop() {
+	// Define gamemode formatting
+	struct gameMode {
+		String modeName;
+		long maxTime, incrementTime;
+	};
+	// Define gamemodes
+	struct gameMode modes[12] = {{"Bullet", 60, 0}, {"3 Blitz", 180, 0}, {"3|2 Blitz", 180, 2}, {"5 Blitz", 300, 0}, {"5|5 Blitz", 300, 5}, {"10 Rapid", 600, 0}, {"15 Rapid", 900, 0}, {"15|10 Rapid", 900, 10}, {"30 Min", 1800, 0}, {"45|45", 2700, 45}, {"1 Hour", 3600, 0}, {"Max", 5999, 0}, };
+
+	int latch = digitalRead(10);
+	int button3Latch = digitalRead(button3);
+
+	int gamemodeCounter = 0;
+	int button1State = 0;
+	int lastbutton1State = 0;
+	int button2State = 0;
+	int lastbutton2State = 0;
+
+	// Choose gamemode Loop
+	while (true) {
+		// Increments gamemodeCounter when button1 is pressed
+		button1State = digitalRead(button1);
+		if (button1State != lastbutton1State) {
+			if (button1State == 1) {
+				gamemodeCounter++;
+				if (gamemodeCounter > 11) {
+					gamemodeCounter = 11;
+				}
+				Serial.println(modes[gamemodeCounter % 12].modeName);
+			} else {}
+			delay(50);
+		}
+		lastbutton1State = button1State;
+		// Decrements gamemodeCounter when button2 is pressed
+		button2State = digitalRead(button2);
+		if (button2State != lastbutton2State) {
+			if (button2State == 1) {
+				gamemodeCounter--;
+				if (gamemodeCounter < 0) {
+					gamemodeCounter = 0;
+				}
+				Serial.println(modes[gamemodeCounter % 12].modeName);
+			} else {}
+			delay(50);
+		}
+		lastbutton2State = button2State;
+		// Breaks loop when button3 is pressed
+		if (digitalRead(button3) != button3Latch) {
+			break;
+		}
+	}
+	
+
 	long time_start = 0;
 
 	// Total time remaining for each player, and original starting time
-	long totaltime = 90000;
+	long totaltime = modes[gamemodeCounter % 12].maxTime * 1000L;
 	long player_time[2] = {totaltime, totaltime};
 
 
-	// TODO - This won't actually display anything till the clock is hit
+	// TODO - This won't actually display anything till button3 is hit
 	// but this whole segment needs a rewrite anyway, fix it later
 	// TODO - This "memory" can also later be used to have time increments when a player moves
-	// Get stuck in this loop until the button is hit for the first time
-	int latch = digitalRead(10);
+	// Get stuck in this loop until button3 is hit for the first time
 	while (true) {
 		if (digitalRead(10) != latch) {
 			time_start = millis();
