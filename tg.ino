@@ -87,22 +87,26 @@ void loop() {
 	while (true) {
 		// Increments chosen game mode when button 1 is pressed
 		// Only increments on button down, not both down and up
-		if (digitalRead(button_1) == 1 && button_state[1] == 0) {
-			mode++;
-			if (mode > 11) mode = 0;
-			Serial.println(modes[mode].name);
+		if (digitalRead(button_1) != button_state[1]) {
+			if (digitalRead(button_1) == 1) {
+				mode++;
+				if (mode > 11) mode = 0;
+				Serial.println(modes[mode].name);
+			}
 			delay(50);
-			button_state[1] = 0;
+			button_state[1] = digitalRead(button_1);
 		}
 
 		// Increments chosen game mode when button 2 is pressed
 		// Only decrements on button down, not both down and up
-		if (digitalRead(button_2) == 1 && button_state[2] == 0) {
-			mode--;
-			if (mode < 0) mode = 11;
-			Serial.println(modes[mode].name);
+		if (digitalRead(button_2) != 1 button_state[2]) {
+			if (digitalRead(button_2) == 1) {
+				mode--;
+				if (mode < 0) mode = 11;
+				Serial.println(modes[mode].name);
+			}
 			delay(50);
-			button_state[2] = 0;
+			button_state[2] = digitalRead(button_2);
 		}
 
 		// Breaks the loop when button 3 is pressed
