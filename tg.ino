@@ -81,45 +81,60 @@ void loop() {
 	// Tracks which mode is currently selected
 	int mode = 0;
 
+	long time_start = 0;
+
 	// Choose game mode Loop
 	while (true) {
 		// Increments chosen game mode when button 1 is pressed
 		if (digitalRead(button_1) != button_state[1]) {
-			mode++;
-			mode %= 12;
-			Serial.println(modes[mode].name);
+			// Only increments on button down, not both down and up
+			if (digitalRead(button_1) == 1 ) {
+				mode++;
+				mode %= 12;
+				Serial.println(modes[mode].name);
+			} else {}
 			delay(50);
 			button_state[1] = digitalRead(button_1);
 		}
 
 		// Increments chosen game mode when button 2 is pressed
 		if (digitalRead(button_2) != button_state[2]) {
-			mode--;
-			mode %= 12;
-			Serial.println(modes[mode].name);
+			// Only decrements on button down, not both down and up
+			if (digitalRead(button_2) == 1 ) {
+				mode--;
+				// shitty underflow fix
+				if (mode < 0) {
+					mode = 11;
+				}
+				mode %= 12;
+				Serial.println(modes[mode].name);
+			} else {}
 			delay(50);
 			button_state[2] = digitalRead(button_2);
 		}
 
 		// Breaks the loop when button 3 is pressed
-		if (digitalRead(button_3) != button_state[3]) break;
+		if (digitalRead(button_3) != button_state[3]) {
+			time_start = millis();
+			break;
+		}
 	}
 
 	// Total time remaining for each player, and original starting time
 	long totaltime = modes[mode].time * 1000L;
 	long player_time[2] = {totaltime, totaltime};
-	long time_start = 0;
 
 	// TODO - Display starting times on the clocks, can have a designated function to do this
 
 	// Get stuck in this loop until the switch is hit for the first time
+	/*
 	while (true) {
 		if (digitalRead(m_switch) != button_state[0]) {
 			time_start = millis();
 			break;
 		}
 	}
-
+	*/
 
 	// Main gameplay loop
 	while (true) {
