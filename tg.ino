@@ -99,7 +99,7 @@ void loop() {
 
 		// Increments chosen game mode when button 2 is pressed
 		// Only decrements on button down, not both down and up
-		if (digitalRead(button_2) != 1 button_state[2]) {
+		if (digitalRead(button_2) != button_state[2]) {
 			if (digitalRead(button_2) == 1) {
 				mode--;
 				if (mode < 0) mode = 11;
@@ -114,6 +114,10 @@ void loop() {
 			time_start = millis();
 			break;
 		}
+
+		// Display static time on the clocks
+		print_time(modes[mode].time * 1000L, &matrix_1);
+		print_time(modes[mode].time * 1000L, &matrix_2);
 	}
 
 	// Total time remaining for each player, and original starting time
