@@ -75,42 +75,34 @@ void loop() {
 								{"15 Rapid", 900, 0}, {"15|10 Rapid", 900, 10}, {"30 Min", 1800, 0},
 								{"45|45", 2700, 45}, {"1 Hour", 3600, 0}, {"Max", 5999, 0}};
 
+	// TODO - The buttons should just be 0, we should try testing with this
 	// 0 = Move switch, 1 = button_1, 2 = button_2, 3 = button_3
 	int button_state[4] = {digitalRead(m_switch), digitalRead(button_1), digitalRead(button_2), digitalRead(button_3)};
 
-	// Tracks which mode is currently selected
+	// Tracks which mode is currently selected, and stores our starting time
 	int mode = 0;
-
 	long time_start = 0;
 
 	// Choose game mode Loop
 	while (true) {
 		// Increments chosen game mode when button 1 is pressed
-		if (digitalRead(button_1) != button_state[1]) {
-			// Only increments on button down, not both down and up
-			if (digitalRead(button_1) == 1 ) {
-				mode++;
-				mode %= 12;
-				Serial.println(modes[mode].name);
-			} else {}
+		// Only increments on button down, not both down and up
+		if (digitalRead(button_1) == 1 && button_state[1] == 0) {
+			mode++;
+			if (mode > 11) mode = 0;
+			Serial.println(modes[mode].name);
 			delay(50);
-			button_state[1] = digitalRead(button_1);
+			button_state[1] = 0;
 		}
 
 		// Increments chosen game mode when button 2 is pressed
-		if (digitalRead(button_2) != button_state[2]) {
-			// Only decrements on button down, not both down and up
-			if (digitalRead(button_2) == 1 ) {
-				mode--;
-				// shitty underflow fix
-				if (mode < 0) {
-					mode = 11;
-				}
-				mode %= 12;
-				Serial.println(modes[mode].name);
-			} else {}
+		// Only decrements on button down, not both down and up
+		if (digitalRead(button_2) == 1 && button_state[2] == 0) {
+			mode--;
+			if (mode < 0) mode = 11;
+			Serial.println(modes[mode].name);
 			delay(50);
-			button_state[2] = digitalRead(button_2);
+			button_state[2] = 0;
 		}
 
 		// Breaks the loop when button 3 is pressed
@@ -126,32 +118,12 @@ void loop() {
 
 	// TODO - Display starting times on the clocks, can have a designated function to do this
 
-	// Get stuck in this loop until the switch is hit for the first time
-	/*
-	while (true) {
-		if (digitalRead(m_switch) != button_state[0]) {
-			time_start = millis();
-			break;
-		}
-	}
-	*/
-
 	// Main gameplay loop
 	while (true) {
 		long current_elapsed = millis() - time_start;
 
 		// In the event the switch is hit
 		if (button_state[0] != digitalRead(m_switch)) {
-
-			// TODO - Only here in case the new code breaks and we need to revert
-			// Dock the previous players time
-			/* if (button_state[0]) { */
-			/* 	player_time[0] = player_time[0] - current_elapsed + (modes[mode % 12].increment * 1000); */
-			/* } else { */
-			/* 	player_time[1] = player_time[1] - current_elapsed + (modes[mode % 12].increment * 1000); */
-			/* } */
-			/* player_time[!button_state[0]] = player_time[!button_state[0]] - current_elapsed + (modes[mode % 12].increment * 1000); */
-
 			// Adjust player time and apply the increment
 			player_time[!button_state[0]] -= current_elapsed - (modes[mode].increment * 1000);
 
