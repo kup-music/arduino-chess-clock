@@ -1,18 +1,17 @@
-#include <Wire.h> // Enable this line if using Arduino Uno, Mega, etc.
-#include <Adafruit_GFX.h>
+#include <Wire.h> // Enable this line if using Arduino Uno, Mega, etc. 
 #include "Adafruit_LEDBackpack.h"
-// #include <LiquidCrystal.h>
+#include <LiquidCrystal.h>
 
 Adafruit_7segment matrix_1 = Adafruit_7segment();
 Adafruit_7segment matrix_2 = Adafruit_7segment();
 
-// const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
-// LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+const int rs = 46, en = 44, d4 = 40, d5 = 38, d6 = 36, d7 = 34;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 // Define the pins to use for our main switch, buttons, and buzzer
-static const int m_switch = 10;
-static const int button_1 = 3, button_2 = 4, button_3 = 5, button_4 = 6;
-static const int buzzer = 7;
+static const int m_switch = 47;
+static const int button_1 = 31, button_2 = 33, button_3 = 35, button_4 = 37;
+static const int buzzer = 53;
 
 void setup() {
 	// put your setup code here, to run once:
@@ -22,11 +21,11 @@ void setup() {
 	matrix_2.begin(0x71);
 
 	pinMode(buzzer, OUTPUT);
-	pinMode(8, OUTPUT);
-	pinMode(9, OUTPUT);
-	pinMode(10, INPUT);
-	digitalWrite(8, HIGH);
-	digitalWrite(9, LOW);
+	pinMode(43, OUTPUT);
+	pinMode(45, OUTPUT);
+	pinMode(47, INPUT);
+	digitalWrite(43, HIGH);
+	digitalWrite(45, LOW);
 
 	pinMode(button_1, INPUT);
 	pinMode(button_2, INPUT);
@@ -35,7 +34,7 @@ void setup() {
 	// TODO - Currently unused
 	pinMode(button_4, INPUT);
 
-	// lcd.begin(16, 2);
+	lcd.begin(16, 2);
 	// lcd.print("Hello, World!");
 }
 
@@ -70,10 +69,10 @@ void loop() {
 	};
 
 	// Define each of the playable game modes
-	struct game_mode modes[12] = {{"Bullet", 60, 0}, {"3 Blitz", 180, 0}, {"3|2 Blitz", 180, 2},
-								{"5 Blitz", 300, 0}, {"5|5 Blitz", 300, 5}, {"10 Rapid", 600, 0},
-								{"15 Rapid", 900, 0}, {"15|10 Rapid", 900, 10}, {"30 Min", 1800, 0},
-								{"45|45", 2700, 45}, {"1 Hour", 3600, 0}, {"Max", 5999, 0}};
+	struct game_mode modes[12] = {{"1 Minute Bullet", 60, 0}, {"3 Minute Blitz", 180, 0}, {"3 Minute Blitz", 180, 2},
+								{"5 Minute Blitz", 300, 0}, {"5 Minute Blitz", 300, 5}, {"10 Minute Rapid", 600, 0},
+								{"15 Minute Rapid", 900, 0}, {"15 Minute Rapid", 900, 10}, {"30 Minute", 1800, 0},
+								{"45 Minute", 2700, 45}, {"1 Hour", 3600, 0}, {"Max", 5999, 0}};
 
 	// TODO - The buttons should just be 0, we should try testing with this
 	// 0 = Move switch, 1 = button_1, 2 = button_2, 3 = button_3
@@ -91,7 +90,12 @@ void loop() {
 			if (digitalRead(button_1) == 1) {
 				mode++;
 				if (mode > 11) mode = 0;
-				Serial.println(modes[mode].name);
+				//Serial.println(modes[mode].name);
+				lcd.clear();
+        		lcd.setCursor(0, 0);
+	    	    lcd.print(modes[mode].name);
+	    	    lcd.setCursor(0, 1);
+		        lcd.print("Increment: " + String(modes[mode].increment));
 			}
 			delay(50);
 			button_state[1] = digitalRead(button_1);
@@ -103,21 +107,29 @@ void loop() {
 			if (digitalRead(button_2) == 1) {
 				mode--;
 				if (mode < 0) mode = 11;
-				Serial.println(modes[mode].name);
+				//Serial.println(modes[mode].name);
+				lcd.clear();
+        		lcd.setCursor(0, 0);
+	    	    lcd.print(modes[mode].name);
+	    	    lcd.setCursor(0, 1);
+		        lcd.print("Increment: " + String(modes[mode].increment));
 			}
 			delay(50);
 			button_state[2] = digitalRead(button_2);
 		}
+
+		// Display static time on the clocks
+        print_time(modes[mode].time * 1000L, &matrix_1);
+        print_time(modes[mode].time * 1000L, &matrix_2);
+
+        // Display Game Information on LCD
+
 
 		// Breaks the loop when button 3 is pressed
 		if (digitalRead(button_3) != button_state[3]) {
 			time_start = millis();
 			break;
 		}
-
-		// Display static time on the clocks
-		print_time(modes[mode].time * 1000L, &matrix_1);
-		print_time(modes[mode].time * 1000L, &matrix_2);
 	}
 
 	// Total time remaining for each player, and original starting time
@@ -137,7 +149,7 @@ void loop() {
 
 			// Set a new time start and reset the button_state[0]
 			time_start = millis();
-			button_state[0] = digitalRead(10);
+			button_state[0] = digitalRead(47);
 		}
 
 		// Decrement play time by the time passed since the last button press
@@ -155,9 +167,19 @@ void loop() {
 			// TODO - This is stupid but I don't know what the arduino will actually take so can't test
 			// Ideally we just pass button_state[0] in as a variable in the string instead of two print lines
 			if (!button_state[0]) {
-				Serial.println("Game over! Player 1 has run out of time, player 2 wins!");
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("Game Over!");
+				lcd.setCursor(0, 1);
+				lcd.print("Player 2 Wins!");
+				//Serial.println("Game over! Player 1 has run out of time, player 2 wins!");
 			} else {
-				Serial.println("Game over! Player 2 has run out of time, player 1 wins!");
+				//Serial.println("Game over! Player 2 has run out of time, player 1 wins!");
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("Game Over!");
+				lcd.setCursor(0, 1);
+				lcd.print("Player 1 Wins!");
 			}
 
 			tone(buzzer, 500);
