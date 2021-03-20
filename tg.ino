@@ -42,19 +42,22 @@ void setup() {
 void print_time(long time_code, Adafruit_7segment *matrix) {
 	long output = time_code / 1000;
 
+	float precise = 0;
+
 	// If player has less than 60 seconds switch to a precision display
 	if (output < 60) {
+		// Writes SS.MS
 		output = (output * 100) + (time_code % 1000 / 10);
+		precise = ((float)output / 100);
+		Serial.println(precise);
+		matrix->print(precise);
+		matrix->drawColon(false);
 	} else {
+		// Writes MM:SS
 		output = (output / 60 * 100) + (time_code / 1000 % 60);
+		matrix->print(output);
+		matrix->drawColon(true);
 	}
-
-	// Print the current digits to the clock
-	matrix->print(output);
-
-	// Only display the colon if time is above a minute
-	matrix->drawColon(output >= 60);
-	// TODO - Need to add decimal for precision values
 
 	// Write out to the matrix
 	matrix->writeDisplay();
@@ -76,7 +79,7 @@ void loop() {
 
 	// TODO - The buttons should just be 0, we should try testing with this
 	// 0 = Move switch, 1 = button_1, 2 = button_2, 3 = button_3
-	int button_state[4] = {digitalRead(m_switch), digitalRead(button_1), digitalRead(button_2), digitalRead(button_3)};
+	int button_state[5] = {digitalRead(m_switch), digitalRead(button_1), digitalRead(button_2), digitalRead(button_3), digitalRead(button_4)};
 
 	// Tracks which mode is currently selected, and stores our starting time
 	int mode = 0;
@@ -160,6 +163,15 @@ void loop() {
 		} else {
 			print_time(output, &matrix_2);
 			print_time(player_time[0], &matrix_1);
+		}
+
+		// Pause/Play
+		if (button_state[4] != digitalRead(button_4)) {
+			if (digitalRead(button_4) == 1) {
+				while (true) {
+
+				}
+			} else {}
 		}
 
 		// If a win condition is met
