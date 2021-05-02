@@ -21,11 +21,11 @@ void setup() {
 	matrix_2.begin(0x71);
 
 	pinMode(buzzer, OUTPUT);
-	pinMode(43, OUTPUT);
-	pinMode(45, OUTPUT);
+	//pinMode(43, OUTPUT);
+	//pinMode(45, OUTPUT);
 	pinMode(47, INPUT);
-	digitalWrite(43, HIGH);
-	digitalWrite(45, LOW);
+	//digitalWrite(43, HIGH);
+	//digitalWrite(45, LOW);
 
 	pinMode(button_1, INPUT);
 	pinMode(button_2, INPUT);
@@ -49,7 +49,7 @@ void print_time(long time_code, Adafruit_7segment *matrix) {
 		// Writes SS.MS
 		output = (output * 100) + (time_code % 1000 / 10);
 		precise = ((float)output / 100);
-		Serial.println(precise);
+		//Serial.println(precise);
 		matrix->print(precise);
 		matrix->drawColon(false);
 	} else {
@@ -84,6 +84,13 @@ void loop() {
 	// Tracks which mode is currently selected, and stores our starting time
 	int mode = 0;
 	long time_start = 0;
+
+jeff:
+		lcd.clear();
+       	lcd.setCursor(0, 0);
+	   	lcd.print("Please pick a");
+	   	lcd.setCursor(0, 1);
+		lcd.print("gamemode to play");
 
 	// Choose game mode Loop
 	while (true) {
@@ -152,11 +159,13 @@ void loop() {
 
 			// Set a new time start and reset the button_state[0]
 			time_start = millis();
-			button_state[0] = digitalRead(47);
+			button_state[0] = digitalRead(m_switch);
+			continue;
 		}
 
 		// Decrement play time by the time passed since the last button press
 		long output = player_time[!button_state[0]] - current_elapsed;
+
 		if (button_state[0]) {
 			print_time(output, &matrix_1);
 			print_time(player_time[1], &matrix_2);
@@ -166,15 +175,32 @@ void loop() {
 		}
 
 		// Pause/Play
-		if (button_state[4] != digitalRead(button_4)) {
-			if (digitalRead(button_4) == 1) {
-				while (true) {
-
-				}
-			} else {}
+		if (button_state[3] != digitalRead(button_3)) {
+			if (digitalRead(button_3) == 1) {
+				
+			}
+			delay(50);
+			button_state[3] = digitalRead(button_3);
 		}
 
-		// If a win condition is met
+/*		// Reset clocks before timeout
+		if (button_state[4] != digitalRead(button_4)) {
+			if (digitalRead(button_4) == 1) {
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("Game Over!");
+				lcd.setCursor(0, 1);
+				lcd.print("Checkmate or FF.");
+				tone(buzzer, 500);
+				delay(1000);
+				noTone(buzzer);
+				goto jeff;
+			}
+			delay(50);
+			button_state[4] = digitalRead(button_4);
+		}
+*/
+		// Timeout win condition
 		if (output <= 0) {
 			// TODO - This is stupid but I don't know what the arduino will actually take so can't test
 			// Ideally we just pass button_state[0] in as a variable in the string instead of two print lines
@@ -204,4 +230,3 @@ void loop() {
 
 // TODO
 // Play pause button
-// Time precision at low time, with decimal
